@@ -9,7 +9,7 @@ import android.util.Log;
  * instances. It represents some ongoing work, here a thread we have that sits
  * around incrementing a progress indicator.
  */
-public class TaskFragment extends Fragment implements TaskListener {
+public class TaskFragment extends Fragment implements TaskCallbacks {
   private static final String TAG = TaskFragment.class.getSimpleName();
   private boolean mRunning = false;
   private DummyTask mTask;
@@ -77,27 +77,27 @@ public class TaskFragment extends Fragment implements TaskListener {
   @Override
   public void onPreExecute() {
     // Forward the call to the UiFragment
-    ((TaskListener) getTargetFragment()).onPreExecute();
+    ((TaskCallbacks) getTargetFragment()).onPreExecute();
     mRunning = true;
   }
 
   @Override
   public void onProgressUpdate(double percent) {
     // Forward the call to the UiFragment
-    ((TaskListener) getTargetFragment()).onProgressUpdate(percent);
+    ((TaskCallbacks) getTargetFragment()).onProgressUpdate(percent);
   }
 
   @Override
   public void onCancelled() {
     // Forward the call to the UiFragment
-    ((TaskListener) getTargetFragment()).onCancelled();
+    ((TaskCallbacks) getTargetFragment()).onCancelled();
     mRunning = false;
   }
 
   @Override
   public void onPostExecute() {
     // Forward the call to the UiFragment
-    ((TaskListener) getTargetFragment()).onPostExecute();
+    ((TaskCallbacks) getTargetFragment()).onPostExecute();
     mRunning = false;
   }
 }

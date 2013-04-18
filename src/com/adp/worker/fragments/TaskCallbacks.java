@@ -1,6 +1,6 @@
 package com.adp.worker.fragments;
 
-public interface TaskListener {
+public interface TaskCallbacks {
 
   public void onPreExecute();
 

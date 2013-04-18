@@ -37,8 +37,9 @@ public class MainActivity extends FragmentActivity {
    * This is a fragment showing UI that will be updated from work done in the
    * retained fragment.
    */
-  public static class UiFragment extends Fragment implements TaskListener {
+  public static class UiFragment extends Fragment implements TaskCallbacks {
     private static final String TAG = UiFragment.class.getSimpleName();
+
     private TaskFragment mTaskFragment;
     private ProgressBar mProgressBar;
     private Button mButton;
@@ -48,7 +49,9 @@ public class MainActivity extends FragmentActivity {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       Log.i(TAG, "onCreateView(LayoutInflater, ViewGroup, Bundle)");
       View view = inflater.inflate(R.layout.fragment_main, container, false);
+
       mProgressBar = (ProgressBar) view.findViewById(R.id.progress_horizontal);
+
       mButton = (Button) view.findViewById(R.id.task_button);
       mButton.setOnClickListener(new View.OnClickListener() {
         @Override
@@ -60,7 +63,9 @@ public class MainActivity extends FragmentActivity {
           }
         }
       });
+
       mPercent = (TextView) view.findViewById(R.id.percent_progress);
+
       return view;
     }
 
@@ -109,12 +114,15 @@ public class MainActivity extends FragmentActivity {
       mButton.setText(getString(R.string.cancel));
     }
 
+    private static final NumberFormat nf = NumberFormat.getPercentInstance();
+    static { nf.setMinimumFractionDigits(1); }
+
     @Override
     public void onProgressUpdate(double percent) {
       Log.i(TAG, "doInBackground(" + percent + ")");
       int position = (int) (percent * mProgressBar.getMax());
       mProgressBar.setProgress(position);
-      mPercent.setText(formatPercent(percent));
+      mPercent.setText(nf.format(percent));
     }
 
     @Override
@@ -132,12 +140,6 @@ public class MainActivity extends FragmentActivity {
       mButton.setText(getString(R.string.start));
       mProgressBar.setProgress(mProgressBar.getMax());
       mPercent.setText(getString(R.string.one_hundred_percent));
-    }
-
-    private static String formatPercent(double percent) {
-      NumberFormat nf = NumberFormat.getPercentInstance();
-      nf.setMinimumFractionDigits(1);
-      return nf.format(percent);
     }
   }
 }

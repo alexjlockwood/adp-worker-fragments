@@ -4,9 +4,9 @@ import android.os.AsyncTask;
 import android.os.SystemClock;
 
 public class DummyTask extends AsyncTask<Void, Double, Void> {
-  private TaskListener mCallback;
+  private TaskCallbacks mCallback;
 
-  public DummyTask(TaskListener callback) {
+  public DummyTask(TaskCallbacks callback) {
     mCallback = callback;
   }
 
