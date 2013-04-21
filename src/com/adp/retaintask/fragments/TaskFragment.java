@@ -18,8 +18,8 @@ import android.view.ViewGroup;
 public class TaskFragment extends Fragment {
   private static final String TAG = TaskFragment.class.getSimpleName();
 
-  private boolean mRunning = false;
-  private DummyTask mTask = null;
+  private boolean mRunning;
+  private DummyTask mTask;
 
   @Override
   public void onAttach(Activity activity) {
@@ -38,6 +38,7 @@ public class TaskFragment extends Fragment {
     Log.i(TAG, "      +++ onCreate(Bundle)");
     super.onCreate(savedInstanceState);
     setRetainInstance(true);
+    mRunning = false;
     Log.i(TAG, "      --- onCreate(Bundle)");
   }
 
@@ -168,7 +169,7 @@ public class TaskFragment extends Fragment {
 
     @Override
     protected void onPreExecute() {
-       // Proxy the call to the UiFragment
+      // Proxy the call to the UiFragment
       ((TaskCallbacks) getTargetFragment()).onPreExecute();
       mRunning = true;
     }
@@ -176,10 +177,10 @@ public class TaskFragment extends Fragment {
     @Override
     protected Void doInBackground(Void... ignore) {
       int i = 0;
-      while (!isCancelled() && i < 200) {
-        publishProgress(i / 200.0);
-        SystemClock.sleep(75);
-        i += 3;
+      while (!isCancelled() && i < 213) {
+        publishProgress(i / 213.0);
+        SystemClock.sleep(100);
+        i++;
       }
       return null;
     }
@@ -203,5 +204,12 @@ public class TaskFragment extends Fragment {
       ((TaskCallbacks) getTargetFragment()).onPostExecute();
       mRunning = false;
     }
+  }
+
+  static interface TaskCallbacks {
+    public void onPreExecute();
+    public void onProgressUpdate(double percent);
+    public void onCancelled();
+    public void onPostExecute();
   }
 }
