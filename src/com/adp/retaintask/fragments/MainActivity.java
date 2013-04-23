@@ -12,10 +12,9 @@ import android.view.MenuItem;
 import com.adp.retaintask.R;
 
 /**
- * This example shows how you can use a Fragment to easily propagate state (such
- * as threads) across activity instances when an activity needs to be restarted
- * due to, for example, a configuration change. This is easier than using the
- * raw Activity#onRetainNonConfiguratinInstance() API.
+ * The MainActivity's only responsibility is to instantiate and display the
+ * UiFragment to the screen. This activity will be destroyed and re-created on
+ * configuration changes.
  */
 public class MainActivity extends FragmentActivity {
   private static final String TAG = MainActivity.class.getSimpleName();

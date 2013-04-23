@@ -46,7 +46,6 @@ public class UiFragment extends Fragment implements TaskFragment.TaskCallbacks {
   public void onCreate(Bundle savedInstanceState) {
     Log.i(TAG, "   +++ onCreate(Bundle)");
     super.onCreate(savedInstanceState);
-    setRetainInstance(true);
     Log.i(TAG, "   --- onCreate(Bundle)");
   }
 
