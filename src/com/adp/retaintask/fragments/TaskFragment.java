@@ -12,8 +12,7 @@ import android.view.ViewGroup;
 
 /**
  * This is the Fragment implementation that will be retained across activity
- * instances. It represents some ongoing work, here a thread we have that sits
- * around incrementing a progress indicator.
+ * instances.
  */
 public class TaskFragment extends Fragment {
   private static final String TAG = TaskFragment.class.getSimpleName();
