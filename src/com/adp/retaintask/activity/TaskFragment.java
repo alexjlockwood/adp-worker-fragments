@@ -1,4 +1,4 @@
-package com.adp.retaintask.fragments;
+package com.adp.retaintask.activity;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -83,8 +83,8 @@ public class TaskFragment extends Fragment {
 
     @Override
     protected void onPreExecute() {
-      // Proxy the call to the UiFragment
-      ((TaskCallbacks) getTargetFragment()).onPreExecute();
+      // Proxy the call to the MainActivity
+      ((TaskCallbacks) getActivity()).onPreExecute();
       mRunning = true;
     }
 
@@ -101,21 +101,21 @@ public class TaskFragment extends Fragment {
 
     @Override
     protected void onProgressUpdate(Double... percent) {
-      // Proxy the call to the UiFragment
-      ((TaskCallbacks) getTargetFragment()).onProgressUpdate(percent[0]);
+      // Proxy the call to the MainActivity
+      ((TaskCallbacks) getActivity()).onProgressUpdate(percent[0]);
     }
 
     @Override
     protected void onCancelled() {
-      // Proxy the call to the UiFragment
-      ((TaskCallbacks) getTargetFragment()).onCancelled();
+      // Proxy the call to the MainActivity
+      ((TaskCallbacks) getActivity()).onCancelled();
       mRunning = false;
     }
 
     @Override
     protected void onPostExecute(Void ignore) {
-      // Proxy the call to the UiFragment
-      ((TaskCallbacks) getTargetFragment()).onPostExecute();
+      // Proxy the call to the MainActivity
+      ((TaskCallbacks) getActivity()).onPostExecute();
       mRunning = false;
     }
   }

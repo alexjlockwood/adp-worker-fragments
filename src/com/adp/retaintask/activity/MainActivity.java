@@ -1,16 +1,15 @@
-package com.adp.retaintask.fragments;
+package com.adp.retaintask.activity;
 
 import java.text.NumberFormat;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.res.Resources;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.provider.Settings;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -19,32 +18,27 @@ import android.widget.Toast;
 import com.adp.retaintask.R;
 
 /**
- * This is a fragment showing UI that will be updated from work done in the
- * retained fragment.
+ * The MainActivity's only responsibility is to instantiate and display the
+ * UiFragment to the screen. This activity will be destroyed and re-created on
+ * configuration changes.
  */
-public class UiFragment extends Fragment implements TaskFragment.TaskCallbacks {
+public class MainActivity extends FragmentActivity implements TaskFragment.TaskCallbacks {
   @SuppressWarnings("unused")
-  private static final String TAG = UiFragment.class.getSimpleName();
+  private static final String TAG = MainActivity.class.getSimpleName();
 
-  private Context mContext;
-  private Resources mResources;
   private TaskFragment mTaskFragment;
   private ProgressBar mProgressBar;
-  private Button mButton;
   private TextView mPercent;
+  private Button mButton;
 
   @Override
-  public void onAttach(Activity activity) {
-    super.onAttach(activity);
-    mContext = activity.getApplicationContext();
-    mResources = mContext.getResources();
-  }
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.fragment_main);
 
-  @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-    View view = inflater.inflate(R.layout.fragment_main, container, false);
-    mProgressBar = (ProgressBar) view.findViewById(R.id.progress_horizontal);
-    mButton = (Button) view.findViewById(R.id.task_button);
+    mProgressBar = (ProgressBar) findViewById(R.id.progress_horizontal);
+    mPercent = (TextView) findViewById(R.id.percent_progress);
+    mButton = (Button) findViewById(R.id.task_button);
     mButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
@@ -55,26 +49,18 @@ public class UiFragment extends Fragment implements TaskFragment.TaskCallbacks {
         }
       }
     });
-    mPercent = (TextView) view.findViewById(R.id.percent_progress);
-    return view;
-  }
-
-  @Override
-  public void onActivityCreated(Bundle savedInstanceState) {
-    super.onActivityCreated(savedInstanceState);
 
     if (savedInstanceState != null) {
       mProgressBar.setProgress(savedInstanceState.getInt("current_progress"));
       mPercent.setText(savedInstanceState.getString("percent_progress"));
     }
 
-    FragmentManager fm = getFragmentManager();
+    FragmentManager fm = getSupportFragmentManager();
     mTaskFragment = (TaskFragment) fm.findFragmentByTag("task");
 
     // If we haven't retained the worker fragment retained, then create it.
     if (mTaskFragment == null) {
       mTaskFragment = new TaskFragment();
-      mTaskFragment.setTargetFragment(this, 0);
       fm.beginTransaction().add(mTaskFragment, "task").commit();
     }
 
@@ -98,8 +84,8 @@ public class UiFragment extends Fragment implements TaskFragment.TaskCallbacks {
 
   @Override
   public void onPreExecute() {
-    Toast.makeText(mContext, R.string.task_started_msg, Toast.LENGTH_SHORT).show();
-    mButton.setText(mResources.getString(R.string.cancel));
+    Toast.makeText(this, R.string.task_started_msg, Toast.LENGTH_SHORT).show();
+    mButton.setText(getString(R.string.cancel));
   }
 
   private static NumberFormat sFormatter = NumberFormat.getPercentInstance();
@@ -114,17 +100,37 @@ public class UiFragment extends Fragment implements TaskFragment.TaskCallbacks {
 
   @Override
   public void onCancelled() {
-    Toast.makeText(mContext, R.string.task_cancelled_msg, Toast.LENGTH_SHORT).show();
-    mButton.setText(mResources.getString(R.string.start));
+    Toast.makeText(this, R.string.task_cancelled_msg, Toast.LENGTH_SHORT).show();
+    mButton.setText(getString(R.string.start));
     mProgressBar.setProgress(0);
-    mPercent.setText(mResources.getString(R.string.zero_percent));
+    mPercent.setText(getString(R.string.zero_percent));
   }
 
   @Override
   public void onPostExecute() {
-    Toast.makeText(mContext, R.string.task_complete_msg, Toast.LENGTH_SHORT).show();
-    mButton.setText(mResources.getString(R.string.start));
+    Toast.makeText(this, R.string.task_complete_msg, Toast.LENGTH_SHORT).show();
+    mButton.setText(getString(R.string.start));
     mProgressBar.setProgress(mProgressBar.getMax());
-    mPercent.setText(mResources.getString(R.string.one_hundred_percent));
+    mPercent.setText(getString(R.string.one_hundred_percent));
+  }
+
+  /************************/
+  /***** OPTIONS MENU *****/
+  /************************/
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    getMenuInflater().inflate(R.menu.activity_main, menu);
+    return true;
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    switch (item.getItemId()) {
+      case R.id.menu_change_font_size:
+        startActivity(new Intent(Settings.ACTION_DISPLAY_SETTINGS));
+        return true;
+    }
+    return super.onOptionsItemSelected(item);
   }
 }
