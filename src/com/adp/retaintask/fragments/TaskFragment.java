@@ -164,7 +164,11 @@ public class TaskFragment extends Fragment {
   /***** BACKGROUND TASK *****/
   /***************************/
 
-  // Note this class is nonstatic
+  /** 
+   * Note that this class is nonstatic (because a DummyTask is not supposed to
+   * exist without an outer TaskFragment instance). This won't cause any unexpected
+   * memory leaks since the DummyTask won't outlive the TaskFragment's lifecycle.
+   */
   private class DummyTask extends AsyncTask<Void, Double, Void> {
 
     @Override
