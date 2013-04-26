@@ -147,4 +147,38 @@ public class TaskFragment extends Fragment {
       mRunning = false;
     }
   }
+
+  /************************/
+  /***** LOGS & STUFF *****/
+  /************************/
+
+  @Override
+  public void onActivityCreated(Bundle savedInstanceState) {
+    Log.i(TAG, "onActivityCreated(Bundle)");
+    super.onActivityCreated(savedInstanceState);
+  }
+
+  @Override
+  public void onStart() {
+    Log.i(TAG, "onStart()");
+    super.onStart();
+  }
+
+  @Override
+  public void onResume() {
+    Log.i(TAG, "onResume()");
+    super.onResume();
+  }
+
+  @Override
+  public void onPause() {
+    Log.i(TAG, "onPause()");
+    super.onPause();
+  }
+
+  @Override
+  public void onStop() {
+    Log.i(TAG, "onStop()");
+    super.onStop();
+  }
 }
