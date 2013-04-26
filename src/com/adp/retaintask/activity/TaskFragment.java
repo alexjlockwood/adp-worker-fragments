@@ -8,16 +8,31 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 
 /**
- * This is the Fragment implementation that will be retained across activity
- * instances.
+ * This Fragment manages a single background task and retains itself across
+ * configuration changes.
  */
 public class TaskFragment extends Fragment {
   private static final String TAG = TaskFragment.class.getSimpleName();
+
+  /**
+   * Callback interface through which the fragment can report the task's
+   * progress and results back to the Activity.
+   */
+  static interface TaskCallbacks {
+    public void onPreExecute();
+    public void onProgressUpdate(int percent);
+    public void onCancelled();
+    public void onPostExecute();
+  }
 
   private TaskCallbacks mCallbacks;
   private DummyTask mTask;
   private boolean mRunning;
 
+  /**
+   * Android passes us a reference to the newly created Activity by calling this
+   * method after each configuration change.
+   */
   @Override
   public void onAttach(Activity activity) {
     Log.i(TAG, "onAttach(Activity)");
@@ -25,13 +40,14 @@ public class TaskFragment extends Fragment {
     if (!(activity instanceof TaskCallbacks)) {
       throw new IllegalStateException("Activity must implement the TaskCallbacks interface.");
     }
+
+    // Hold a reference to the parent Activity so we can report back the task's
+    // current progress and results.
     mCallbacks = (TaskCallbacks) activity;
   }
 
   /**
-   * Called when the fragment is first initialized. Since we are using
-   * {@link #setRetainInstance(boolean)}, this method will not be called on
-   * configuration changes.
+   * This method is called only once when the Fragment is first created.
    */
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -41,8 +57,8 @@ public class TaskFragment extends Fragment {
   }
 
   /**
-   * This is called when the fragment is going away. It is NOT called when the
-   * fragment is being propagated between activity instances.
+   * This method is <em>not</em> called when the Fragment is being retained
+   * across Activity instances.
    */
   @Override
   public void onDestroy() {
@@ -89,12 +105,10 @@ public class TaskFragment extends Fragment {
   /***************************/
 
   /**
-   * Note that this class is nonstatic (because a DummyTask is not supposed to
-   * exist without an outer TaskFragment instance). This won't cause any
-   * unexpected memory leaks since the DummyTask won't outlive the
-   * TaskFragment's lifecycle.
+   * A dummy task that performs some (dumb) background work and proxies progress
+   * updates and results back to the Activity.
    */
-  private class DummyTask extends AsyncTask<Void, Double, Void> {
+  private class DummyTask extends AsyncTask<Void, Integer, Void> {
 
     @Override
     protected void onPreExecute() {
@@ -105,18 +119,16 @@ public class TaskFragment extends Fragment {
 
     @Override
     protected Void doInBackground(Void... ignore) {
-      int i = 0;
-      while (!isCancelled() && i < 100) {
+      for (int i = 0; !isCancelled() && i < 100; i++) {
         Log.i(TAG, "publishProgress(" + i + "%)");
-        publishProgress(i / 100.0);
-        SystemClock.sleep(150);
-        i++;
+        SystemClock.sleep(100);
+        publishProgress(i);
       }
       return null;
     }
 
     @Override
-    protected void onProgressUpdate(Double... percent) {
+    protected void onProgressUpdate(Integer... percent) {
       // Proxy the call to the Activity
       mCallbacks.onProgressUpdate(percent[0]);
     }
@@ -134,12 +146,5 @@ public class TaskFragment extends Fragment {
       mCallbacks.onPostExecute();
       mRunning = false;
     }
-  }
-
-  static interface TaskCallbacks {
-    public void onPreExecute();
-    public void onProgressUpdate(double percent);
-    public void onCancelled();
-    public void onPostExecute();
   }
 }

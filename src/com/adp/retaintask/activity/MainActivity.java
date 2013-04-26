@@ -17,8 +17,16 @@ import android.widget.Toast;
 
 import com.adp.retaintask.R;
 
+/**
+ * This Activity displays the screen's UI and starts a single
+ * TaskFragment that will retain itself when configuration
+ * changes occur.
+ */
 public class MainActivity extends FragmentActivity implements TaskFragment.TaskCallbacks {
   private static final String TAG = MainActivity.class.getSimpleName();
+
+  private static final String KEY_CURRENT_PROGRESS = "current_progress";
+  private static final String KEY_PERCENT_PROGRESS = "percent_progress";
 
   private TaskFragment mTaskFragment;
   private ProgressBar mProgressBar;
@@ -31,6 +39,7 @@ public class MainActivity extends FragmentActivity implements TaskFragment.TaskC
     super.onCreate(savedInstanceState);
     setContentView(R.layout.main);
 
+    // Initialize views
     mProgressBar = (ProgressBar) findViewById(R.id.progress_horizontal);
     mPercent = (TextView) findViewById(R.id.percent_progress);
     mButton = (Button) findViewById(R.id.task_button);
@@ -45,16 +54,17 @@ public class MainActivity extends FragmentActivity implements TaskFragment.TaskC
       }
     });
 
+    // Restore saved state
     if (savedInstanceState != null) {
-      mProgressBar.setProgress(savedInstanceState.getInt("current_progress"));
-      mPercent.setText(savedInstanceState.getString("percent_progress"));
+      mProgressBar.setProgress(savedInstanceState.getInt(KEY_CURRENT_PROGRESS));
+      mPercent.setText(savedInstanceState.getString(KEY_PERCENT_PROGRESS));
     }
 
     FragmentManager fm = getSupportFragmentManager();
     mTaskFragment = (TaskFragment) fm.findFragmentByTag("task");
 
-    // If non-null, then the fragment is being retained across a
-    // configuration change.
+    // If the Fragment is non-null, then it is currently being
+    // retained across a configuration change.
     if (mTaskFragment == null) {
       mTaskFragment = new TaskFragment();
       fm.beginTransaction().add(mTaskFragment, "task").commit();
@@ -70,8 +80,8 @@ public class MainActivity extends FragmentActivity implements TaskFragment.TaskC
   @Override
   public void onSaveInstanceState(Bundle outState) {
     super.onSaveInstanceState(outState);
-    outState.putInt("current_progress", mProgressBar.getProgress());
-    outState.putString("percent_progress", mPercent.getText().toString());
+    outState.putInt(KEY_CURRENT_PROGRESS, mProgressBar.getProgress());
+    outState.putString(KEY_PERCENT_PROGRESS, mPercent.getText().toString());
   }
 
   /****************************/
@@ -86,10 +96,10 @@ public class MainActivity extends FragmentActivity implements TaskFragment.TaskC
   }
 
   @Override
-  public void onProgressUpdate(double percent) {
-    Log.i(TAG, "onProgressUpdate(" + (int) (percent * 100) + "%)");
-    mPercent.setText((int) (percent * 100) + "%");
-    mProgressBar.setProgress((int) (percent * mProgressBar.getMax()));
+  public void onProgressUpdate(int percent) {
+    Log.i(TAG, "onProgressUpdate(" + percent + "%)");
+    mPercent.setText(percent + "%");
+    mProgressBar.setProgress(percent * mProgressBar.getMax() / 100);
   }
 
   @Override
@@ -125,6 +135,7 @@ public class MainActivity extends FragmentActivity implements TaskFragment.TaskC
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
       case R.id.menu_recreate_activity:
+        // Simulates a configuration change
         recreate();
         return true;
     }
