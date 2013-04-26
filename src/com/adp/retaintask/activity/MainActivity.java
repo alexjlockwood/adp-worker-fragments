@@ -1,15 +1,15 @@
 package com.adp.retaintask.activity;
 
-import java.text.NumberFormat;
-
-import android.content.Intent;
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -17,13 +17,7 @@ import android.widget.Toast;
 
 import com.adp.retaintask.R;
 
-/**
- * The MainActivity's only responsibility is to instantiate and display the
- * UiFragment to the screen. This activity will be destroyed and re-created on
- * configuration changes.
- */
 public class MainActivity extends FragmentActivity implements TaskFragment.TaskCallbacks {
-  @SuppressWarnings("unused")
   private static final String TAG = MainActivity.class.getSimpleName();
 
   private TaskFragment mTaskFragment;
@@ -33,13 +27,14 @@ public class MainActivity extends FragmentActivity implements TaskFragment.TaskC
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
+    Log.i(TAG, "onCreate(Bundle)");
     super.onCreate(savedInstanceState);
-    setContentView(R.layout.fragment_main);
+    setContentView(R.layout.main);
 
     mProgressBar = (ProgressBar) findViewById(R.id.progress_horizontal);
     mPercent = (TextView) findViewById(R.id.percent_progress);
     mButton = (Button) findViewById(R.id.task_button);
-    mButton.setOnClickListener(new View.OnClickListener() {
+    mButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
         if (mTaskFragment.isRunning()) {
@@ -58,7 +53,8 @@ public class MainActivity extends FragmentActivity implements TaskFragment.TaskC
     FragmentManager fm = getSupportFragmentManager();
     mTaskFragment = (TaskFragment) fm.findFragmentByTag("task");
 
-    // If we haven't retained the worker fragment retained, then create it.
+    // If non-null, then the fragment is being retained across a
+    // configuration change.
     if (mTaskFragment == null) {
       mTaskFragment = new TaskFragment();
       fm.beginTransaction().add(mTaskFragment, "task").commit();
@@ -84,30 +80,30 @@ public class MainActivity extends FragmentActivity implements TaskFragment.TaskC
 
   @Override
   public void onPreExecute() {
-    Toast.makeText(this, R.string.task_started_msg, Toast.LENGTH_SHORT).show();
+    Log.i(TAG, "onPreExecute()");
     mButton.setText(getString(R.string.cancel));
+    Toast.makeText(this, R.string.task_started_msg, Toast.LENGTH_SHORT).show();
   }
-
-  private static NumberFormat sFormatter = NumberFormat.getPercentInstance();
-  static { sFormatter.setMinimumFractionDigits(1); }
 
   @Override
   public void onProgressUpdate(double percent) {
-    int position = (int) (percent * mProgressBar.getMax());
-    mProgressBar.setProgress(position);
-    mPercent.setText(sFormatter.format(percent));
+    Log.i(TAG, "onProgressUpdate(" + (int) (percent * 100) + "%)");
+    mPercent.setText((int) (percent * 100) + "%");
+    mProgressBar.setProgress((int) (percent * mProgressBar.getMax()));
   }
 
   @Override
   public void onCancelled() {
-    Toast.makeText(this, R.string.task_cancelled_msg, Toast.LENGTH_SHORT).show();
+    Log.i(TAG, "onCancelled()");
     mButton.setText(getString(R.string.start));
     mProgressBar.setProgress(0);
     mPercent.setText(getString(R.string.zero_percent));
+    Toast.makeText(this, R.string.task_cancelled_msg, Toast.LENGTH_SHORT).show();
   }
 
   @Override
   public void onPostExecute() {
+    Log.i(TAG, "onPostExecute()");
     Toast.makeText(this, R.string.task_complete_msg, Toast.LENGTH_SHORT).show();
     mButton.setText(getString(R.string.start));
     mProgressBar.setProgress(mProgressBar.getMax());
@@ -120,17 +116,52 @@ public class MainActivity extends FragmentActivity implements TaskFragment.TaskC
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
-    getMenuInflater().inflate(R.menu.activity_main, menu);
+    getMenuInflater().inflate(R.menu.main, menu);
     return true;
   }
 
+  @TargetApi(Build.VERSION_CODES.HONEYCOMB)
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
-      case R.id.menu_change_font_size:
-        startActivity(new Intent(Settings.ACTION_DISPLAY_SETTINGS));
+      case R.id.menu_recreate_activity:
+        recreate();
         return true;
     }
     return super.onOptionsItemSelected(item);
+  }
+
+  /************************/
+  /***** LOGS & STUFF *****/
+  /************************/
+
+  @Override
+  protected void onStart() {
+    Log.i(TAG, "onStart()");
+    super.onStart();
+  }
+
+  @Override
+  protected void onResume() {
+    Log.i(TAG, "onResume()");
+    super.onResume();
+  }
+
+  @Override
+  protected void onPause() {
+    Log.i(TAG, "onPause()");
+    super.onPause();
+  }
+
+  @Override
+  protected void onStop() {
+    Log.i(TAG, "onStop()");
+    super.onStop();
+  }
+
+  @Override
+  protected void onDestroy() {
+    Log.i(TAG, "onDestroy()");
+    super.onDestroy();
   }
 }

@@ -1,19 +1,32 @@
 package com.adp.retaintask.activity;
 
+import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 
 /**
  * This is the Fragment implementation that will be retained across activity
  * instances.
  */
 public class TaskFragment extends Fragment {
-  @SuppressWarnings("unused")
   private static final String TAG = TaskFragment.class.getSimpleName();
+
+  private TaskCallbacks mCallbacks;
   private DummyTask mTask;
   private boolean mRunning;
+
+  @Override
+  public void onAttach(Activity activity) {
+    Log.i(TAG, "onAttach(Activity)");
+    super.onAttach(activity);
+    if (!(activity instanceof TaskCallbacks)) {
+      throw new IllegalStateException("Activity must implement the TaskCallbacks interface.");
+    }
+    mCallbacks = (TaskCallbacks) activity;
+  }
 
   /**
    * Called when the fragment is first initialized. Since we are using
@@ -22,9 +35,9 @@ public class TaskFragment extends Fragment {
    */
   @Override
   public void onCreate(Bundle savedInstanceState) {
+    Log.i(TAG, "onCreate(Bundle)");
     super.onCreate(savedInstanceState);
     setRetainInstance(true);
-    mRunning = false;
   }
 
   /**
@@ -33,12 +46,14 @@ public class TaskFragment extends Fragment {
    */
   @Override
   public void onDestroy() {
+    Log.i(TAG, "onDestroy()");
     super.onDestroy();
-    // We don't need to cancel this if you don't want (the AsyncTask will
-    // continue to run and objects will be retained in memory, but presumably
-    // the task will be short-lived so this won't matter).
     cancel();
   }
+
+  /*****************************/
+  /***** TASK FRAGMENT API *****/
+  /*****************************/
 
   /**
    * Start the background task.
@@ -83,17 +98,18 @@ public class TaskFragment extends Fragment {
 
     @Override
     protected void onPreExecute() {
-      // Proxy the call to the MainActivity
-      ((TaskCallbacks) getActivity()).onPreExecute();
+      // Proxy the call to the Activity
+      mCallbacks.onPreExecute();
       mRunning = true;
     }
 
     @Override
     protected Void doInBackground(Void... ignore) {
       int i = 0;
-      while (!isCancelled() && i < 213) {
-        publishProgress(i / 213.0);
-        SystemClock.sleep(100);
+      while (!isCancelled() && i < 100) {
+        Log.i(TAG, "publishProgress(" + i + "%)");
+        publishProgress(i / 100.0);
+        SystemClock.sleep(150);
         i++;
       }
       return null;
@@ -101,21 +117,21 @@ public class TaskFragment extends Fragment {
 
     @Override
     protected void onProgressUpdate(Double... percent) {
-      // Proxy the call to the MainActivity
-      ((TaskCallbacks) getActivity()).onProgressUpdate(percent[0]);
+      // Proxy the call to the Activity
+      mCallbacks.onProgressUpdate(percent[0]);
     }
 
     @Override
     protected void onCancelled() {
-      // Proxy the call to the MainActivity
-      ((TaskCallbacks) getActivity()).onCancelled();
+      // Proxy the call to the Activity
+      mCallbacks.onCancelled();
       mRunning = false;
     }
 
     @Override
     protected void onPostExecute(Void ignore) {
-      // Proxy the call to the MainActivity
-      ((TaskCallbacks) getActivity()).onPostExecute();
+      // Proxy the call to the Activity
+      mCallbacks.onPostExecute();
       mRunning = false;
     }
   }
