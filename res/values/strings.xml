@@ -10,6 +10,6 @@
     <string name="task_complete_msg">Task complete!</string>
     <string name="zero_percent">0%</string>
     <string name="one_hundred_percent">100%</string>
-    <string name="menu_recreate_activity">Recreate Activity</string>
+    <string name="menu_trigger_config_change">Trigger Config Change</string>
 
 </resources>
