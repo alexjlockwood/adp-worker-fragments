@@ -1,4 +1,4 @@
-package com.adp.retaintask;
+package com.adp.retaintask.extra;
 
 import android.app.Activity;
 import android.os.AsyncTask;
@@ -29,21 +29,16 @@ public class TaskFragment extends Fragment {
   private DummyTask mTask;
   private boolean mRunning;
 
-  /**
-   * Android passes us a reference to the newly created Activity by calling this
-   * method after each configuration change.
-   */
   @Override
   public void onAttach(Activity activity) {
-    Log.i(TAG, "onAttach(Activity)");
     super.onAttach(activity);
-    if (!(activity instanceof TaskCallbacks)) {
-      throw new IllegalStateException("Activity must implement the TaskCallbacks interface.");
+    if (!(getTargetFragment() instanceof TaskCallbacks)) {
+      throw new IllegalStateException("Target fragment must implement the TaskCallbacks interface.");
     }
 
     // Hold a reference to the parent Activity so we can report back the task's
     // current progress and results.
-    mCallbacks = (TaskCallbacks) activity;
+    mCallbacks = (TaskCallbacks) getTargetFragment();
   }
 
   /**
@@ -65,6 +60,12 @@ public class TaskFragment extends Fragment {
     Log.i(TAG, "onDestroy()");
     super.onDestroy();
     cancel();
+  }
+
+  @Override
+  public void onDetach() {
+    super.onDetach();
+    mCallbacks = null;
   }
 
   /*****************************/
@@ -112,9 +113,11 @@ public class TaskFragment extends Fragment {
 
     @Override
     protected void onPreExecute() {
-      // Proxy the call to the Activity
-      mCallbacks.onPreExecute();
-      mRunning = true;
+      // Proxy the call to the Activity.
+      if (mCallbacks != null) {
+        mCallbacks.onPreExecute();
+        mRunning = true;
+      }
     }
 
     @Override
@@ -129,22 +132,28 @@ public class TaskFragment extends Fragment {
 
     @Override
     protected void onProgressUpdate(Integer... percent) {
-      // Proxy the call to the Activity
-      mCallbacks.onProgressUpdate(percent[0]);
+      // Proxy the call to the Activity.
+      if (mCallbacks != null) {
+        mCallbacks.onProgressUpdate(percent[0]);
+      }
     }
 
     @Override
     protected void onCancelled() {
-      // Proxy the call to the Activity
-      mCallbacks.onCancelled();
-      mRunning = false;
+      // Proxy the call to the Activity.
+      if (mCallbacks != null) {
+        mCallbacks.onCancelled();
+        mRunning = false;
+      }
     }
 
     @Override
     protected void onPostExecute(Void ignore) {
-      // Proxy the call to the Activity
-      mCallbacks.onPostExecute();
-      mRunning = false;
+      // Proxy the call to the Activity.
+      if (mCallbacks != null) {
+        mCallbacks.onPostExecute();
+        mRunning = false;
+      }
     }
   }
 

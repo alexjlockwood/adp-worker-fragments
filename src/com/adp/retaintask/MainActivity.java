@@ -134,7 +134,8 @@ public class MainActivity extends FragmentActivity implements TaskFragment.TaskC
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
       case R.id.menu_trigger_config_change:
-        // Simulate a configuration change
+        // Simulate a configuration change. Only available on
+        // Honeycomb and above.
         recreate();
         return true;
     }
