@@ -8,11 +8,12 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 
 /**
- * This Fragment manages a single background task and retains itself across
+ * TaskFragment manages a single background task and retains itself across
  * configuration changes.
  */
 public class TaskFragment extends Fragment {
   private static final String TAG = TaskFragment.class.getSimpleName();
+  private static final boolean DEBUG = true; // Set this to false to disable logs.
 
   /**
    * Callback interface through which the fragment can report the task's
@@ -29,20 +30,28 @@ public class TaskFragment extends Fragment {
   private DummyTask mTask;
   private boolean mRunning;
 
+  /**
+   * Hold a reference to the target fragment so we can report the task's current
+   * progress and results. We do so in {@link #onAttach(Activity)} since it is
+   * guaranteed to be the first method called after a configuration change
+   * occurs (remember, the UIFragment will be recreated after each configuration
+   * change, so we will need to obtain a reference to the new instance).
+   */
   @Override
   public void onAttach(Activity activity) {
+    if (DEBUG) Log.i(TAG, "onAttach(Activity)");
     super.onAttach(activity);
     if (!(getTargetFragment() instanceof TaskCallbacks)) {
       throw new IllegalStateException("Target fragment must implement the TaskCallbacks interface.");
     }
 
-    // Hold a reference to the parent Activity so we can report back the task's
+    // Hold a reference to the target fragment so we can report back the task's
     // current progress and results.
     mCallbacks = (TaskCallbacks) getTargetFragment();
   }
 
   /**
-   * This method is called only once when the Fragment is first created.
+   * This method is called once when the Fragment is first created.
    */
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -52,20 +61,16 @@ public class TaskFragment extends Fragment {
   }
 
   /**
-   * This method is <em>not</em> called when the Fragment is being retained
-   * across Activity instances.
+   * Note that this method is <em>not</em> called when the Fragment is being
+   * retained across Activity instances. It will, however, be called when its
+   * parent Activity is being destroyed for good (such as when the user clicks
+   * the back button, etc.).
    */
   @Override
   public void onDestroy() {
     Log.i(TAG, "onDestroy()");
     super.onDestroy();
     cancel();
-  }
-
-  @Override
-  public void onDetach() {
-    super.onDetach();
-    mCallbacks = null;
   }
 
   /*****************************/
@@ -114,16 +119,14 @@ public class TaskFragment extends Fragment {
     @Override
     protected void onPreExecute() {
       // Proxy the call to the Activity.
-      if (mCallbacks != null) {
-        mCallbacks.onPreExecute();
-        mRunning = true;
-      }
+      mCallbacks.onPreExecute();
+      mRunning = true;
     }
 
     @Override
     protected Void doInBackground(Void... ignore) {
       for (int i = 0; !isCancelled() && i < 100; i++) {
-        Log.i(TAG, "publishProgress(" + i + "%)");
+        if (DEBUG) Log.i(TAG, "publishProgress(" + i + "%)");
         SystemClock.sleep(100);
         publishProgress(i);
       }
@@ -133,27 +136,21 @@ public class TaskFragment extends Fragment {
     @Override
     protected void onProgressUpdate(Integer... percent) {
       // Proxy the call to the Activity.
-      if (mCallbacks != null) {
-        mCallbacks.onProgressUpdate(percent[0]);
-      }
+      mCallbacks.onProgressUpdate(percent[0]);
     }
 
     @Override
     protected void onCancelled() {
       // Proxy the call to the Activity.
-      if (mCallbacks != null) {
-        mCallbacks.onCancelled();
-        mRunning = false;
-      }
+      mCallbacks.onCancelled();
+      mRunning = false;
     }
 
     @Override
     protected void onPostExecute(Void ignore) {
       // Proxy the call to the Activity.
-      if (mCallbacks != null) {
-        mCallbacks.onPostExecute();
-        mRunning = false;
-      }
+      mCallbacks.onPostExecute();
+      mRunning = false;
     }
   }
 
@@ -163,31 +160,38 @@ public class TaskFragment extends Fragment {
 
   @Override
   public void onActivityCreated(Bundle savedInstanceState) {
-    Log.i(TAG, "onActivityCreated(Bundle)");
+    if (DEBUG) Log.i(TAG, "onActivityCreated(Bundle)");
     super.onActivityCreated(savedInstanceState);
   }
 
   @Override
   public void onStart() {
-    Log.i(TAG, "onStart()");
+    if (DEBUG) Log.i(TAG, "onStart()");
     super.onStart();
   }
 
   @Override
   public void onResume() {
-    Log.i(TAG, "onResume()");
+    if (DEBUG) Log.i(TAG, "onResume()");
     super.onResume();
   }
 
   @Override
   public void onPause() {
-    Log.i(TAG, "onPause()");
+    if (DEBUG) Log.i(TAG, "onPause()");
     super.onPause();
   }
 
   @Override
   public void onStop() {
-    Log.i(TAG, "onStop()");
+    if (DEBUG) Log.i(TAG, "onStop()");
     super.onStop();
   }
+
+  @Override
+  public void onDetach() {
+    if (DEBUG) Log.i(TAG, "onDetach()");
+    super.onDetach();
+  }
+
 }

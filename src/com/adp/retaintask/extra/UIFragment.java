@@ -16,14 +16,16 @@ import android.widget.Toast;
 import com.adp.retaintask.R;
 
 /**
- * This Fragment displays the screen's UI and starts a single TaskFragment that
+ * UIFragment displays the screen's UI and starts a single TaskFragment that
  * will retain itself when configuration changes occur.
  */
 public class UIFragment extends Fragment implements TaskFragment.TaskCallbacks {
     private static final String TAG = UIFragment.class.getSimpleName();
+    private static final boolean DEBUG = true; // Set this to false to disable logs.
 
     private static final String KEY_CURRENT_PROGRESS = "current_progress";
     private static final String KEY_PERCENT_PROGRESS = "percent_progress";
+    private static final String TAG_TASK_FRAGMENT = "task_fragment";
 
     private TaskFragment mTaskFragment;
     private ProgressBar mProgressBar;
@@ -32,8 +34,10 @@ public class UIFragment extends Fragment implements TaskFragment.TaskCallbacks {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+      if (DEBUG) Log.i(TAG, "onCreateView(LayoutInflater, ViewGroup, Bundle)");
       View view = inflater.inflate(R.layout.main, container, false);
       mProgressBar = (ProgressBar) view.findViewById(R.id.progress_horizontal);
+      mPercent = (TextView) view.findViewById(R.id.percent_progress);
       mButton = (Button) view.findViewById(R.id.task_button);
       mButton.setOnClickListener(new OnClickListener() {
         @Override
@@ -45,12 +49,12 @@ public class UIFragment extends Fragment implements TaskFragment.TaskCallbacks {
           }
         }
       });
-      mPercent = (TextView) view.findViewById(R.id.percent_progress);
       return view;
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
+      if (DEBUG) Log.i(TAG, "onActivityCreated(Bundle)");
       super.onActivityCreated(savedInstanceState);
 
       // Restore saved state.
@@ -60,13 +64,14 @@ public class UIFragment extends Fragment implements TaskFragment.TaskCallbacks {
       }
 
       FragmentManager fm = getActivity().getSupportFragmentManager();
-      mTaskFragment = (TaskFragment) fm.findFragmentByTag("task");
+      mTaskFragment = (TaskFragment) fm.findFragmentByTag(TAG_TASK_FRAGMENT);
 
-      // If we haven't retained the worker fragment retained, then create it.
+      // If we haven't retained the worker fragment retained, then create it
+      // and set this UIFragment as the TaskFragment's target fragment.
       if (mTaskFragment == null) {
         mTaskFragment = new TaskFragment();
         mTaskFragment.setTargetFragment(this, 0);
-        fm.beginTransaction().add(mTaskFragment, "task").commit();
+        fm.beginTransaction().add(mTaskFragment, TAG_TASK_FRAGMENT).commit();
       }
 
       if (mTaskFragment.isRunning()) {
@@ -78,6 +83,7 @@ public class UIFragment extends Fragment implements TaskFragment.TaskCallbacks {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
+      if (DEBUG) Log.i(TAG, "onSaveInstanceState(Bundle)");
       super.onSaveInstanceState(outState);
       outState.putInt(KEY_CURRENT_PROGRESS, mProgressBar.getProgress());
       outState.putString(KEY_PERCENT_PROGRESS, mPercent.getText().toString());
@@ -89,21 +95,21 @@ public class UIFragment extends Fragment implements TaskFragment.TaskCallbacks {
 
     @Override
     public void onPreExecute() {
-      Log.i(TAG, "onPreExecute()");
+      if (DEBUG) Log.i(TAG, "onPreExecute()");
       mButton.setText(getString(R.string.cancel));
       Toast.makeText(getActivity(), R.string.task_started_msg, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onProgressUpdate(int percent) {
-      Log.i(TAG, "onProgressUpdate(" + percent + "%)");
+      if (DEBUG) Log.i(TAG, "onProgressUpdate(" + percent + "%)");
       mProgressBar.setProgress(percent * mProgressBar.getMax() / 100);
       mPercent.setText(percent + "%");
     }
 
     @Override
     public void onCancelled() {
-      Log.i(TAG, "onCancelled()");
+      if (DEBUG) Log.i(TAG, "onCancelled()");
       mButton.setText(getString(R.string.start));
       mProgressBar.setProgress(0);
       mPercent.setText(getString(R.string.zero_percent));
@@ -112,10 +118,11 @@ public class UIFragment extends Fragment implements TaskFragment.TaskCallbacks {
 
     @Override
     public void onPostExecute() {
-      Log.i(TAG, "onPostExecute()");
+      if (DEBUG) Log.i(TAG, "onPostExecute()");
       mButton.setText(getString(R.string.start));
       mProgressBar.setProgress(mProgressBar.getMax());
       mPercent.setText(getString(R.string.one_hundred_percent));
       Toast.makeText(getActivity(), R.string.task_complete_msg, Toast.LENGTH_SHORT).show();
     }
+
 }
