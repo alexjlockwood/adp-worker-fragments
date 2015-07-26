@@ -66,7 +66,7 @@ public class UIFragment extends Fragment implements TaskFragment.TaskCallbacks {
       FragmentManager fm = getActivity().getSupportFragmentManager();
       mTaskFragment = (TaskFragment) fm.findFragmentByTag(TAG_TASK_FRAGMENT);
 
-      // If we haven't retained the worker fragment retained, then create it
+      // If we haven't retained the worker fragment, then create it
       // and set this UIFragment as the TaskFragment's target fragment.
       if (mTaskFragment == null) {
         mTaskFragment = new TaskFragment();
